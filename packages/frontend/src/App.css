@@ -124,3 +124,12 @@ li:last-child {
   font-size: 0.9rem;
   cursor: pointer;
 }
+
+/* Priority select option states */
+.priority-option-selected {
+  color: #07F2E6; /* Selected priority item */
+}
+
+.priority-option-unselected {
+  color: #7A7A7A; /* Unselected priority item */
+}

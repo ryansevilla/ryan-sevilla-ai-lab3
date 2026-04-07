@@ -26,7 +26,8 @@ This upgrade makes the basic TODO app more useful for day-to-day task management
 
 ## 3. Post-MVP Scope
 
-- Visually highlight overdue tasks so they stand out in the list.
+- Visually highlight overdue tasks in red so they stand out in the list.
+- Display color-coded priority badges: red for `P1`, orange for `P2`, gray for `P3`.
 - Apply advanced task sorting in this order: overdue first, then priority from `P1` to `P3`, then due date ascending, with tasks without a due date last.
 
 ---

@@ -92,3 +92,35 @@ li:last-child {
   color: #d32f2f;
   font-weight: bold;
 }
+
+/* Priority badge colors */
+.priority-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: white;
+  letter-spacing: 0.5px;
+}
+
+.priority-p1 {
+  background-color: #f44336; /* Red */
+}
+
+.priority-p2 {
+  background-color: #ff9800; /* Orange */
+}
+
+.priority-p3 {
+  background-color: #9e9e9e; /* Gray */
+}
+
+/* Priority select in form */
+.priority-select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+}

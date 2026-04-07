@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import {
-  List, ListItem, ListItemText, IconButton, Checkbox, Typography, Box, CircularProgress, Paper, Chip
+  List, ListItem, ListItemText, IconButton, Checkbox, Typography, Box, CircularProgress, Paper, Chip, Select, MenuItem
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import EventIcon from '@mui/icons-material/Event';
 
-function TaskList({ onEdit }) {
+const PRIORITY_COLORS = {
+  P1: { background: '#f44336', color: 'white' },
+  P2: { background: '#ff9800', color: 'white' },
+  P3: { background: '#9e9e9e', color: 'white' },
+};
+
+function TaskList({ onEdit, onUpdatePriority }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -203,6 +209,28 @@ function TaskList({ onEdit }) {
                 gap: 1
               }}
             >
+              {/* Priority badge + inline selector */}
+              <Select
+                value={task.priority || 'P3'}
+                size="small"
+                onChange={e => onUpdatePriority && onUpdatePriority(task, e.target.value)}
+                inputProps={{ 'aria-label': 'task priority' }}
+                sx={{
+                  height: 24,
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  color: 'white',
+                  background: PRIORITY_COLORS[task.priority || 'P3']?.background,
+                  borderRadius: 1,
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '& .MuiSelect-icon': { color: 'white', fontSize: 16 },
+                  '& .MuiSelect-select': { py: 0, px: 1 },
+                }}
+              >
+                <MenuItem value="P1">P1</MenuItem>
+                <MenuItem value="P2">P2</MenuItem>
+                <MenuItem value="P3">P3</MenuItem>
+              </Select>
               {task.due_date && (
                 <Chip
                   icon={<EventIcon sx={{ fontSize: 14 }} />}

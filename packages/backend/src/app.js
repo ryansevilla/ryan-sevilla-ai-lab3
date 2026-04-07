@@ -46,6 +46,7 @@ db.exec(`
     title TEXT NOT NULL,
     description TEXT,
     due_date DATE,
+    priority TEXT NOT NULL DEFAULT 'P3',
     completed BOOLEAN DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )
@@ -88,15 +89,19 @@ app.get('/api/tasks', (req, res) => {
   }
 });
 
+const VALID_PRIORITIES = ['P1', 'P2', 'P3'];
+
 // POST /api/tasks (create)
 app.post('/api/tasks', (req, res) => {
   try {
-    const { title, description, due_date } = req.body;
+    const { title, description, due_date, priority } = req.body;
     if (!title || typeof title !== 'string' || title.trim() === '') {
       return res.status(400).json({ error: 'Task title is required' });
     }
-    const stmt = db.prepare('INSERT INTO tasks (title, description, due_date) VALUES (?, ?, ?)');
-    const result = stmt.run(title, description || '', due_date || null);
+    const validatedDueDate = /^\d{4}-\d{2}-\d{2}$/.test(due_date) ? due_date : null;
+    const validatedPriority = VALID_PRIORITIES.includes(priority) ? priority : 'P3';
+    const stmt = db.prepare('INSERT INTO tasks (title, description, due_date, priority) VALUES (?, ?, ?, ?)');
+    const result = stmt.run(title.trim(), description || '', validatedDueDate, validatedPriority);
     const newTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(result.lastInsertRowid);
     res.status(201).json(newTask);
   } catch (error) {
@@ -120,12 +125,14 @@ app.get('/api/tasks/:id', (req, res) => {
 // PUT /api/tasks/:id (edit)
 app.put('/api/tasks/:id', (req, res) => {
   try {
-    const { title, description, due_date } = req.body;
+    const { title, description, due_date, priority } = req.body;
     if (!title || typeof title !== 'string' || title.trim() === '') {
       return res.status(400).json({ error: 'Task title is required' });
     }
-    const stmt = db.prepare('UPDATE tasks SET title = ?, description = ?, due_date = ? WHERE id = ?');
-    const result = stmt.run(title, description || '', due_date || null, req.params.id);
+    const validatedDueDate = /^\d{4}-\d{2}-\d{2}$/.test(due_date) ? due_date : null;
+    const validatedPriority = VALID_PRIORITIES.includes(priority) ? priority : 'P3';
+    const stmt = db.prepare('UPDATE tasks SET title = ?, description = ?, due_date = ?, priority = ? WHERE id = ?');
+    const result = stmt.run(title.trim(), description || '', validatedDueDate, validatedPriority, req.params.id);
     if (result.changes === 0) return res.status(404).json({ error: 'Task not found' });
     const updatedTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
     res.json(updatedTask);
@@ -135,10 +142,24 @@ app.put('/api/tasks/:id', (req, res) => {
   }
 });
 
-// PATCH /api/tasks/:id (mark complete/incomplete)
+// PATCH /api/tasks/:id (mark complete/incomplete or update priority)
 app.patch('/api/tasks/:id', (req, res) => {
   try {
-    const { completed } = req.body;
+    const { completed, priority } = req.body;
+
+    // Update priority only
+    if (priority !== undefined) {
+      if (!VALID_PRIORITIES.includes(priority)) {
+        return res.status(400).json({ error: 'Priority must be P1, P2, or P3' });
+      }
+      const stmt = db.prepare('UPDATE tasks SET priority = ? WHERE id = ?');
+      const result = stmt.run(priority, req.params.id);
+      if (result.changes === 0) return res.status(404).json({ error: 'Task not found' });
+      const updatedTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
+      return res.json(updatedTask);
+    }
+
+    // Update completion status
     if (typeof completed !== 'boolean') {
       return res.status(400).json({ error: 'Completed must be boolean' });
     }
@@ -148,8 +169,8 @@ app.patch('/api/tasks/:id', (req, res) => {
     const updatedTask = db.prepare('SELECT * FROM tasks WHERE id = ?').get(req.params.id);
     res.json(updatedTask);
   } catch (error) {
-    console.error('Error updating task completion:', error);
-    res.status(500).json({ error: 'Failed to update task completion' });
+    console.error('Error updating task:', error);
+    res.status(500).json({ error: 'Failed to update task' });
   }
 });
 
